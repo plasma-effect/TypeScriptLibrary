@@ -82,5 +82,14 @@
             this.ctx.fillStyle = style;
             this.ctx.fillRect(offset_x, offset_y, width, height);
         }
+
+        public draw_image(
+            image: HTMLImageElement,
+            offset_x: number,
+            offset_y: number) {
+            if (!this.flag) return;
+            this.ctx.drawImage(image, offset_x, offset_y);
+        }
+        
     }
 }
