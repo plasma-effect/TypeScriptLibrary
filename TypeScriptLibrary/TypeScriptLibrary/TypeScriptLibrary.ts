@@ -68,7 +68,7 @@
         ) {
             if (!this.flag) return;
             this.ctx.fillStyle = style;
-            this.ctx.font = size + "px 'ＭＳ Ｐゴシック'";
+            this.ctx.font = size + "px 'Arial'";
             this.ctx.fillText(str, offset_x, offset_y + size);
         }
 
@@ -89,7 +89,72 @@
             offset_y: number) {
             if (!this.flag) return;
             this.ctx.drawImage(image, offset_x, offset_y);
-        }
-        
+        }   
     }
+
+    export namespace game_interface {
+        export class interface_data{
+            public mouse_on: boolean;
+            public mouse_x: number;
+            public mouse_y: number;
+
+            public keyboardpress: boolean[];
+            public keyboardclick: boolean[];
+
+            constructor() {
+                this.keyboardpress = new Array<boolean>(0x100);
+                this.keyboardclick = new Array<boolean>(0x100);
+                for (var i = 0; i < 0x100; ++i)
+                    this.keyboardpress[i] = false;
+                this.reset();
+            }
+
+            public reset() {
+                this.mouse_on = false;
+                this.mouse_x = 0;
+                this.mouse_y = 0;
+                for (var i = 0; i < 0x100; ++i)
+                    this.keyboardclick[i] = false;
+            }
+        }
+        var helper = new interface_data();
+        var now_data = new interface_data();
+        document.addEventListener('click', (e) => {
+            helper.mouse_on = true;
+            helper.mouse_x = e.clientX;
+            helper.mouse_y = e.clientY;
+        });
+        document.addEventListener("keydown", (e) => {
+            helper.keyboardclick[e.keyCode] = true;
+            helper.keyboardpress[e.keyCode] = true;
+        });
+        document.addEventListener("keyup", (e) => {
+            helper.keyboardpress[e.keyCode] = false;
+        });
+
+        export function mouse_on() {
+            return now_data.mouse_on;
+        }
+        export function mouse_x() {
+            return now_data.mouse_x;
+        }
+        export function mouse_y() {
+            return now_data.mouse_y;
+        }
+        export function keyboard_click(code: number) {
+            return now_data.keyboardclick[code];
+        }
+        export function keyboard_press(code: number) {
+            return now_data.keyboardpress[code];
+        }
+
+        export function set_interval(callback: () => void, timer: number = 20) {
+            setInterval(() => {
+                now_data = helper;
+                helper.reset();
+                callback();
+            }, timer);
+        }
+    }
+    
 }
