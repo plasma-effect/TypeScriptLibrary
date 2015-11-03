@@ -1,10 +1,13 @@
 ﻿/// <reference path="TypeScriptLibrary.ts"/>
-
 window.onload = () => {
     var c = new plasma.CanvasTraits("field");
+    var f = false;
+    var f2 = false;
     plasma.game_interface.set_interval(() => {
-        c.draw_rect(0, 0, 128, 16, "white");
-        var str = plasma.game_interface.keyboard_press(37) ? "true" : "false";
-        c.draw_string(str, 16, 0, 0);
+        f = f || plasma.game_interface.detail.helper.mouse_on;
+        f2 = f2 || plasma.game_interface.detail.now_data.mouse_on;
+        c.draw_string(f ? "true" : "false", 16, 0, 0);
+        c.draw_string(f2 ? "true" : "false", 16, 0, 16);
+
     });
 };

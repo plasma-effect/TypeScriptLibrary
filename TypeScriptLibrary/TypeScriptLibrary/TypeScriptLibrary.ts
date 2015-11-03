@@ -93,7 +93,7 @@ namespace plasma {
         ) {
             if (!this.flag) return;
             this.ctx.fillStyle = style;
-            this.ctx.font = size + "px 'Arial'";
+            this.ctx.font = size + "px 'メイリオ'";
             this.ctx.fillText(str, offset_x, offset_y + size);
         }
 
@@ -114,12 +114,13 @@ namespace plasma {
             offset_y: number) {
             if (!this.flag) return;
             this.ctx.drawImage(image, offset_x, offset_y);
-        }   
+        }
     }
 
     export namespace game_interface {
-        export class interface_data{
+        export class interface_data {
             public mouse_on: boolean;
+            public mouse_click: boolean;
             public mouse_x: number;
             public mouse_y: number;
 
@@ -131,55 +132,75 @@ namespace plasma {
                 this.keyboardclick = new Array<boolean>(0x100);
                 for (var i = 0; i < 0x100; ++i)
                     this.keyboardpress[i] = false;
+                this.mouse_on = false;
                 this.reset();
             }
 
             public reset() {
-                this.mouse_on = false;
-                this.mouse_x = 0;
-                this.mouse_y = 0;
+                this.mouse_click = false;
                 for (var i = 0; i < 0x100; ++i)
                     this.keyboardclick[i] = false;
             }
+
+            public copy() {
+                var ret = new interface_data();
+                ret.keyboardclick = this.keyboardclick;
+                ret.keyboardpress = this.keyboardpress;
+                ret.mouse_click = this.mouse_click;
+                ret.mouse_on = this.mouse_on;
+                ret.mouse_x = this.mouse_x;
+                ret.mouse_y = this.mouse_y;
+                return ret;
+            }
         }
-        var helper = new interface_data();
-        var now_data = new interface_data();
-        document.addEventListener('click', (e) => {
-            helper.mouse_on = true;
-            helper.mouse_x = e.clientX;
-            helper.mouse_y = e.clientY;
-        });
-        document.addEventListener("keydown", (e) => {
-            helper.keyboardclick[e.keyCode] = true;
-            helper.keyboardpress[e.keyCode] = true;
-        });
-        document.addEventListener("keyup", (e) => {
-            helper.keyboardpress[e.keyCode] = false;
-        });
+        export namespace detail {
+            export var helper = new interface_data();
+            export var now_data = new interface_data();
+        }
 
         export function mouse_on() {
-            return now_data.mouse_on;
+            return detail.now_data.mouse_on;
         }
+        export function mouse_click() {
+            return detail.now_data.mouse_click;
+        }
+
         export function mouse_x() {
-            return now_data.mouse_x;
+            return detail.now_data.mouse_x;
         }
         export function mouse_y() {
-            return now_data.mouse_y;
+            return detail.now_data.mouse_y;
         }
         export function keyboard_click(code: number) {
-            return now_data.keyboardclick[code];
+            return detail.now_data.keyboardclick[code];
         }
         export function keyboard_press(code: number) {
-            return now_data.keyboardpress[code];
+            return detail.now_data.keyboardpress[code];
         }
 
         export function set_interval(callback: () => void, timer: number = 20) {
             setInterval(() => {
-                now_data = helper;
-                helper.reset();
+                detail.now_data = detail.helper.copy();
+                detail.helper.reset();
                 callback();
             }, timer);
         }
     }
-    
 }
+document.addEventListener("mousedown", (e) => {
+    plasma.game_interface.detail.helper.mouse_on = true;
+    plasma.game_interface.detail.helper.mouse_click = true;
+    plasma.game_interface.detail.helper.mouse_x = e.clientX;
+    plasma.game_interface.detail.helper.mouse_y = e.clientY;
+});
+document.addEventListener("mouseup", (e) => {
+    plasma.game_interface.detail.helper.mouse_on = false;
+});
+
+document.addEventListener("keydown", (e) => {
+    plasma.game_interface.detail.helper.keyboardclick[e.keyCode] = true;
+    plasma.game_interface.detail.helper.keyboardpress[e.keyCode] = true;
+});
+document.addEventListener("keyup", (e) => {
+    plasma.game_interface.detail.helper.keyboardpress[e.keyCode] = false;
+});
