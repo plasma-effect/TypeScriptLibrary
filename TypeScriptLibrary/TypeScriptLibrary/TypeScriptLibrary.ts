@@ -69,6 +69,44 @@ namespace plasma {
         }
     }
 
+    export namespace shape {
+        export class Rect {
+            constructor(
+                public offset_x: number,
+                public offset_y: number,
+                public width: number,
+                public height: number) {
+            }
+        }
+
+        export class Circle {
+            constructor(
+                public offset_x: number,
+                public offset_y: number,
+                public radius: number) {
+            }
+        }
+
+        export function hitcheck_rect_point(a: Rect, b: { x: number, y: number }) {
+            return a.offset_x <= b.x &&
+                a.offset_x + a.width > b.x &&
+                a.offset_y <= b.y &&
+                a.offset_y + a.height > b.y;
+        }
+
+        export function hitcheck_rect_rect(a: Rect, b: Rect) {
+            return(
+                hitcheck_rect_point(a, { x: b.offset_x,                 y: b.offset_y                   }) ||
+                hitcheck_rect_point(a, { x: b.offset_x,                 y: b.offset_y + b.height - 1    }) ||
+                hitcheck_rect_point(a, { x: b.offset_x + b.width - 1,   y: b.offset_y                   }) ||
+                hitcheck_rect_point(a, { x: b.offset_x + b.width - 1,   y: b.offset_y + b.height - 1    }) ||
+                hitcheck_rect_point(b, { x: a.offset_x,                 y: a.offset_y                   }) ||
+                hitcheck_rect_point(b, { x: a.offset_x,                 y: a.offset_y + a.height - 1    }) ||
+                hitcheck_rect_point(b, { x: a.offset_x + a.width - 1,   y: a.offset_y                   }) ||
+                hitcheck_rect_point(b, { x: a.offset_x + a.width - 1,   y: a.offset_y + a.height - 1    }));
+        }
+    }
+
     export class CanvasTraits {
         private canvas: HTMLCanvasElement;
         private ctx: CanvasRenderingContext2D;
@@ -108,12 +146,27 @@ namespace plasma {
             this.ctx.fillRect(offset_x, offset_y, width, height);
         }
 
+        public draw_rect_t(
+            rect: shape.Rect,
+            style: string = "black") {
+            this.draw_rect(rect.offset_x, rect.offset_y, rect.width, rect.height, style);
+        }
+
         public draw_image(
             image: HTMLImageElement,
             offset_x: number,
             offset_y: number) {
             if (!this.flag) return;
             this.ctx.drawImage(image, offset_x, offset_y);
+        }
+
+        public draw_image_reverse(
+            image: HTMLImageElement,
+            offset_x: number,
+            offset_y: number) {
+            if (!this.flag) return;
+            this.ctx.transform(-1, 0, 0, 1, offset_x + image.width, offset_y);
+            this.ctx.drawImage(image, 0, 0);
         }
     }
 
@@ -144,8 +197,8 @@ namespace plasma {
 
             public copy() {
                 var ret = new interface_data();
-                ret.keyboardclick = this.keyboardclick;
-                ret.keyboardpress = this.keyboardpress;
+                ret.keyboardclick = this.keyboardclick.filter((v, i, ar) => { return true; });
+                ret.keyboardpress = this.keyboardpress.filter((v, i, ar) => { return true; });
                 ret.mouse_click = this.mouse_click;
                 ret.mouse_on = this.mouse_on;
                 ret.mouse_x = this.mouse_x;
