@@ -31,6 +31,48 @@ namespace plasma {
         }
     }
 
+    export namespace vector{
+        export class Vector {
+            public x: number;
+            public y: number;
+        }
+        export function makeVector(x: number, y: number) {
+            return <Vector>{ x, y };
+        }
+        export function VectorAdd(v: Vector, u: Vector) {
+            return makeVector(v.x + u.x, v.y + u.y);
+        }
+        export function VectorMul(v: Vector, n: number) {
+            return makeVector(v.x * n, v.y * n);
+        }
+
+        export class Matrix {
+            public m11: number;
+            public m12: number;
+            public m21: number;
+            public m22: number;
+        }
+        export function makeMatrix(m11: number, m12: number, m21: number, m22: number) {
+            return <Matrix>{ m11, m12, m21, m22 };
+        }
+
+        export function matrixAdd(m: Matrix, u: Matrix) {
+            return makeMatrix(
+                m.m11 + u.m11, m.m12 + u.m12,
+                m.m21 + u.m21, m.m22 + u.m22);
+        }
+
+        export function matrixMul(m: Matrix, u: Matrix) {
+            return makeMatrix(
+                m.m11 * u.m11 + m.m12 * u.m21, m.m11 * u.m12 + m.m12* u.m22,
+                m.m21 * u.m11 + m.m22 * u.m21, m.m21 * u.m12 + m.m22* u.m22);
+        }
+
+        export function matrixAction(m: Matrix, v: Vector) {
+            return makeVector(m.m11 * v.x + m.m12 * v.y, m.m21 * v.x + m.m22 * v.y);
+        }
+    }
+
     export namespace random {
         export class XorShift {
             constructor(private seed: number) {
@@ -110,7 +152,22 @@ namespace plasma {
     export class CanvasTraits {
         private canvas: HTMLCanvasElement;
         private ctx: CanvasRenderingContext2D;
-        public flag: boolean;
+        private flag: boolean;
+        private default_transform: number[];
+
+        public defaultTransform() {
+            this.default_transform = [1, 0, 0, 1, 0, 0];
+            this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+        }
+
+        public setTransform(
+            m11: number, m12: number,
+            m21: number, m22: number,
+            dx: number, dy: number) {
+            this.default_transform = [m11, m12, m21, m22, dx, dy];
+            this.ctx.setTransform(m11, m12, m21, m22, dx, dy);
+        }
+
         constructor(field_name: string) {
             this.canvas = <HTMLCanvasElement>document.getElementById(field_name);
             if (!this.canvas || !this.canvas.getContext) {
@@ -120,6 +177,7 @@ namespace plasma {
                 this.ctx = this.canvas.getContext('2d');
                 this.flag = true;
             }
+            this.defaultTransform();
         }
 
         public draw_string(
@@ -167,7 +225,91 @@ namespace plasma {
             if (!this.flag) return;
             this.ctx.transform(-1, 0, 0, 1, offset_x + image.width, offset_y);
             this.ctx.drawImage(image, 0, 0);
+            this.ctx.setTransform(
+                this.default_transform[0],
+                this.default_transform[1],
+                this.default_transform[2],
+                this.default_transform[3],
+                this.default_transform[4],
+                this.default_transform[5]);
         }
+
+        public draw_image_rotate(
+            image: HTMLImageElement,
+            offset_x: number,
+            offset_y: number,
+            angle: number) {
+            if (!this.flag) return;
+            var cos = Math.cos(angle);
+            var sin = Math.sin(angle);
+            this.ctx.transform(cos, -sin, sin, cos, offset_x + image.width / 2, offset_y + image.height / 2);
+            this.ctx.drawImage(image, -image.width / 2, - image.height / 2);
+            this.ctx.setTransform(
+                this.default_transform[0],
+                this.default_transform[1],
+                this.default_transform[2],
+                this.default_transform[3],
+                this.default_transform[4],
+                this.default_transform[5]);
+        }
+
+        public draw_image_transform(
+            image: HTMLImageElement,
+            offset_x: number,
+            offset_y: number,
+            m11: number, m12: number,
+            m21: number, m22: number) {
+            if (!this.flag) return;
+            this.ctx.transform(m11, m12, m21, m22, offset_x + image.width / 2, offset_y + image.height / 2);
+            this.ctx.drawImage(image, -image.width / 2, -image.height / 2);
+            this.ctx.setTransform(
+                this.default_transform[0],
+                this.default_transform[1],
+                this.default_transform[2],
+                this.default_transform[3],
+                this.default_transform[4],
+                this.default_transform[5]);
+        }
+
+        public draw_image_scale(
+            image: HTMLImageElement,
+            offset_x: number,
+            offset_y: number,
+            scale_x: number,
+            scale_y: number) {
+            if (!this.flag) return;
+            this.ctx.transform(scale_x, 0, 0, scale_y, offset_x, offset_y);
+            this.ctx.drawImage(image, 0, 0);
+            this.ctx.setTransform(
+                this.default_transform[0],
+                this.default_transform[1],
+                this.default_transform[2],
+                this.default_transform[3],
+                this.default_transform[4],
+                this.default_transform[5]);
+        }
+
+        public draw_line(
+            startx: number,
+            starty: number,
+            endx: number,
+            endy: number,
+            style: string = "black") {
+            this.ctx.strokeStyle = style;
+            this.ctx.beginPath();
+            this.ctx.moveTo(startx, starty);
+            this.ctx.lineTo(endx, endy);
+            this.ctx.stroke();
+        }
+
+        public canvas_resize(
+            w: number,
+            h: number) {
+            if (!this.flag) return;
+            this.canvas.width = w;
+            this.canvas.height = h;
+        }
+        
     }
 
     export namespace game_interface {
@@ -237,6 +379,43 @@ namespace plasma {
                 detail.helper.reset();
                 callback();
             }, timer);
+        }
+
+        export const enum keycode {
+            a = 65,
+            b = 66,
+            c = 67,
+            d = 68,
+            e = 69,
+            f = 70,
+            g = 71,
+            h = 72,
+            i = 73,
+            j = 74,
+            k = 75,
+            l = 76,
+            m = 77,
+            n = 78,
+            o = 79,
+            p = 80,
+            q = 81,
+            r = 82,
+            s = 83,
+            t = 84,
+            u = 85,
+            v = 86,
+            w = 87,
+            x = 88,
+            y = 89,
+            z = 90,
+            left = 37,
+            up = 38,
+            right = 39,
+            down = 40,
+            shift = 16,
+            ctrl = 17,
+            space = 32,
+            enter = 13
         }
     }
 }
