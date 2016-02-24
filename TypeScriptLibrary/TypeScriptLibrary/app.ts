@@ -1,17 +1,14 @@
-﻿/// <reference path="TypeScriptLibrary.ts"/>
+﻿/// <reference path="TypeScriptLibrary.ts" />
 
-function get_string(code: number) {
-    return plasma.game_interface.keyboard_press(code) ? "true" : "false";
-}
+var test = (() => {
+    var x = 0;
+    return () => {
+        return ++x;
+    };
+})();
 
 window.onload = () => {
-    var c = new plasma.CanvasTraits("field");
-    var image = new Image();
-    image.src = "plasma.png";
-    
-    var v = 0.1;
-    plasma.game_interface.set_interval(() => {
-        if (plasma.game_interface.keyboard_click(plasma.game_interface.keycode.space)) v += 0.1;
-        c.draw_image_scale(image, 0, 0, v, v);
-    });
+    var c = new TSL.CanvasTraits("field");
+    c.draw_string(test().toString(), 16, 0, 0);
+    c.draw_string(test().toString(), 16, 16, 0);
 }

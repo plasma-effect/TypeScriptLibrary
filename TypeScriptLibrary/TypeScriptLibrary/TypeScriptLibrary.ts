@@ -23,7 +23,7 @@
 //OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-namespace plasma {
+namespace TSL {
     export namespace utility {
         var date = new Date();
         export function get_time() {
@@ -420,19 +420,19 @@ namespace plasma {
     }
 }
 document.addEventListener("mousedown", (e) => {
-    plasma.game_interface.detail.helper.mouse_on = true;
-    plasma.game_interface.detail.helper.mouse_click = true;
-    plasma.game_interface.detail.helper.mouse_x = e.clientX;
-    plasma.game_interface.detail.helper.mouse_y = e.clientY;
+    TSL.game_interface.detail.helper.mouse_on = true;
+    TSL.game_interface.detail.helper.mouse_click = true;
+    TSL.game_interface.detail.helper.mouse_x = e.clientX;
+    TSL.game_interface.detail.helper.mouse_y = e.clientY;
 });
 document.addEventListener("mouseup", (e) => {
-    plasma.game_interface.detail.helper.mouse_on = false;
+    TSL.game_interface.detail.helper.mouse_on = false;
 });
 
 document.addEventListener("keydown", (e) => {
-    plasma.game_interface.detail.helper.keyboardclick[e.keyCode] = true;
-    plasma.game_interface.detail.helper.keyboardpress[e.keyCode] = true;
+    TSL.game_interface.detail.helper.keyboardclick[e.keyCode] = true;
+    TSL.game_interface.detail.helper.keyboardpress[e.keyCode] = true;
 });
 document.addEventListener("keyup", (e) => {
-    plasma.game_interface.detail.helper.keyboardpress[e.keyCode] = false;
+    TSL.game_interface.detail.helper.keyboardpress[e.keyCode] = false;
 });

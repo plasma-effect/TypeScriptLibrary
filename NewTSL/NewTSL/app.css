@@ -1,0 +1,15 @@
+﻿body {
+    font-family: 'Segoe UI', sans-serif;
+    user-select: none;
+    -moz-user-select: none; /* Firefox */
+    -webkit-user-select: none; /* Safari、Chromeなど */
+    -ms-user-select: none; /* IE10かららしい */
+}
+
+span {
+    font-style: italic;
+}
+
+.selected {
+    color: red;
+}
